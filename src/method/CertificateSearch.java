@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
+import static java.lang.Math.abs;
+
 public class CertificateSearch {
     int nodeNum;
     public int kwnum;
@@ -25,11 +27,11 @@ public class CertificateSearch {
     public int getHop(int u, int kwId, HopLimitHL hl, KwdHL[] kwhl) {
         if (kwHopStore[kwId][u]) return kwHop[kwId][u];
         kwHopStore[kwId][u] = true;
-        kwHop[kwId][u] = hl.getHop(u, kwhl[kwId]);
+        kwHop[kwId][u] = hl.getHop(u, kwhl[kwId]);//O(HLsize), written as O(n) in article but in fact it is small
         return kwHop[kwId][u];
     }
 
-    public CertificateQueue BFSearch(WeightedGraph graph, HopLimitHL hl, KwdHL[] kwdhl,  ArrayList<ArrayList<Integer>> queryList, int diambound)//queryList is the query of vertices of each keyword
+    public CertificateQueue BFSearch(WeightedGraph graph, HopLimitHL hl, KwdHL[] kwdhl,DynamicWD[] dwdArray,ArrayList<ArrayList<Integer>> queryList, int diambound)//queryList is the query of vertices of each keyword
     {
 
         long starttime=System.currentTimeMillis();
@@ -64,7 +66,7 @@ public class CertificateSearch {
             PriItem pitem = pq.poll();
             CertificateQueue q;
 
-            q=GenerateQueueEven(graph,hl,kwdhl,queryList,diambound,pitem.v,pitem.startKwd);
+            q=GenerateQueueEven(graph,hl,kwdhl,dwdArray,queryList,diambound,pitem.v,pitem.startKwd);//MaxM
 
             if(q.kwnum>kwnum)
             {
@@ -100,7 +102,7 @@ public class CertificateSearch {
     }
 
 
-    public CertificateQueue BestFirstSearchPri(WeightedGraph graph, HopLimitHL hl, KwdHL[] kwdhl, ArrayList<ArrayList<Integer>> queryList, int diambound)//queryList is the query of vertices of each keyword
+    public CertificateQueue BestFirstSearchPri(WeightedGraph graph, HopLimitHL hl, KwdHL[] kwdhl, DynamicWD[] dwdArray,ArrayList<ArrayList<Integer>> queryList, int diambound)//queryList is the query of vertices of each keyword
     {
         long starttime=System.currentTimeMillis();
         boolean[] checked=new boolean[nodeNum];
@@ -160,7 +162,7 @@ public class CertificateSearch {
             {
                 CertificateQueue q;
 
-                q=GenerateQueueEven(graph,hl,kwdhl,queryList,diambound,pitem.v,pitem.startKwd);
+                q=GenerateQueueEven(graph,hl,kwdhl,dwdArray,queryList,diambound,pitem.v,pitem.startKwd);
                 checked[pitem.v]=true;
                 if(q.kwnum>kwnum)
                 {
@@ -229,18 +231,27 @@ public class CertificateSearch {
         return min_maxWeightQueue;
     }
 
-    CertificateQueue GenerateQueueEven(WeightedGraph graph,HopLimitHL hl,KwdHL[] kwdhl,ArrayList<ArrayList<Integer>> queryList,int diambound,int v,int startkwd)
+    CertificateQueue GenerateQueueEven(WeightedGraph graph,HopLimitHL hl,KwdHL[] kwdhl,DynamicWD[] dwdArray,ArrayList<ArrayList<Integer>> queryList,int diambound,int v,int startkwd)
     {
+        //MaxM of article
         CertificateQueue q=new CertificateQueue(v);
-        for(int i=0;i<queryList.size();i++)
+        for(int i=0;i<queryList.size();i++)//foreach K
         {
-            if(i==startkwd||getHop(v,i,hl,kwdhl)<=diambound/2)
+            if(i==startkwd||getHop(v,i,hl,kwdhl)<=diambound/2)// if GetWD is not INF
             {
-                DistOriginPair pair=hl.getDist(v,diambound/2,kwdhl[i]);
+                DistOriginPair pair=hl.getDist(v,diambound/2,kwdhl[i]);//getWD(v,K[i],d/2)
                 double weight=pair.dis;
                 int loc=pair.origin;
+                DistOriginPair dwdPair=dwdArray[i].get_wd(v,diambound/2);// my getWD
+                assert abs(pair.dis-dwdPair.dis)<1e-5;
                 q.addKwVertex(loc,weight);
             }
+//            if(i==startkwd||getHop(v,i,hl,kwdhl)<=diambound/2){
+//                DistOriginPair dwdPair=dwdArray[i].get_wd(v,diambound/2);
+//                if(dwdPair!=null) {
+//                    q.addKwVertex(dwdPair.origin, dwdPair.dis);
+//                }
+//            }
         }
         q.calculateWeightMin();
         return q;

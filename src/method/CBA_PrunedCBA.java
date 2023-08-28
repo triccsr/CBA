@@ -125,6 +125,8 @@ public class CBA_PrunedCBA {
                 dir.mkdir();
 
                 long startTime = System.currentTimeMillis();
+                long cbaWhileStartTime = 0,cbaWhileEndTime = 0;
+                long dwdTime=0;
                 AnsTree ans=null;
                 if(directory.contains("LUBM")) queryList=queryListList.get(locOfQuery);
                 else generateQueryList(locOfQuery, ww);
@@ -137,19 +139,26 @@ public class CBA_PrunedCBA {
                     totaltime[locOfQuery][diameter / 2 - 1] = endTime - startTime;
                 }
                 else {
-                    KwdHL[] kwdhl = new KwdHL[queryList.size()];
+                    KwdHL[] kwdhl = new KwdHL[queryList.size()];//initialize dynamic GetWD HL
+                    DynamicWD[] dynamicWDArray = new DynamicWD[queryList.size()];//trial
                     for (int i = 0; i < queryList.size(); i++) {
                         kwdhl[i] = new KwdHL(hl, queryList.get(i), diameter);
+                        long dwdStart=System.currentTimeMillis();
+                        dynamicWDArray[i]=new DynamicWD(ww,queryList.get(i),diameter/2);//trial
+                        long dwdEnd=System.currentTimeMillis();
+                        dwdTime+=dwdEnd-dwdStart;
                     }
                     CertificateSearch search = new CertificateSearch(ww);
                     CertificateQueue CQ=null;
-                    if (method.equals("CBA")) CQ = search.BFSearch(ww, hl, kwdhl, queryList, diameter);
+                    if (method.equals("CBA")) CQ = search.BFSearch(ww, hl, kwdhl,dynamicWDArray, queryList, diameter);//OptMC
                     else if (method.equals("CBA+"))
-                        CQ = search.BestFirstSearchPri(ww, hl, kwdhl,  queryList, diameter);
+                        CQ = search.BestFirstSearchPri(ww, hl, kwdhl, dynamicWDArray, queryList, diameter);//PrunedOptMC
 
                     if(CQ!=null)
                     {
-                        ans = GreedyGST.greedyTreeEven(ww, CQ, hl, diameter);
+                        cbaWhileStartTime=System.nanoTime();
+                        ans = GreedyGST.greedyTreeEven(ww, CQ, hl, diameter);//while ...
+                        cbaWhileEndTime=System.nanoTime();
                     }
 
                 }
@@ -191,6 +200,8 @@ public class CBA_PrunedCBA {
                     f.createNewFile();
                     Writer fOut=new FileWriter(f);
                     System.out.println("diameter="+diameter+"   time: "+totaltime[locOfQuery][diameter/2-1]+" ms");
+                    System.out.println("cbaWhileTime: "+(cbaWhileEndTime-cbaWhileStartTime)+"ns");
+                    System.out.println("dwdTime: "+dwdTime+" ms");
                     if(ans!=null)
                     {
                         fOut.write("keyword number: "+ans.kwNum+"\n");

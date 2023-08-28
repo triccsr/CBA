@@ -27,7 +27,7 @@ public class KwdHL {
     {
         this.diambound=diambound;
         list=new ArrayList[hl.nodeNum];
-        for(Integer u:query)
+        for(Integer u:query)// u \in K
         {
             int vStart,vEnd;
             vStart=hl.vIndicator[u];

@@ -215,7 +215,7 @@ public class Pruned_HBLL {
         frontier=new ArrayList<>();
         changedDistList=new ArrayList<Integer>();
         dynamicQuery=new ArrayList[nodeNum];
-        int breakcount=100;
+        int breakcount=10000;
         hubSize=new int[nodeNum];
         hubTime=new int[nodeNum/breakcount+1];
         System.out.println("there is "+nodeNum+" node to pruneBFS");
@@ -247,6 +247,7 @@ public class Pruned_HBLL {
 
         for(int i=0;i<nodeNum;i++) {
             label[i].sort();
+            //System.out.println("Node"+i+" sorted");
         }
 
 

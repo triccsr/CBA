@@ -12,7 +12,7 @@ public class GreedyGST {
         if(min_maxweightQueue==null) return null;
 
         AnsTree opt=new AnsTree(min_maxweightQueue.certificate,min_maxweightQueue.kwnum,min_maxweightQueue.queue);
-        ArrayList<TerminalItem> opt_tq=new ArrayList<>(0);
+        ArrayList<TerminalItem> opt_tq=new ArrayList<>(0);//S
         TreeHubSub opt_th=new TreeHubSub(ww.nodeNum);
         opt_th.addterminal(hl,min_maxweightQueue.certificate);
         for(int i=0;i<min_maxweightQueue.queue.size();i++)
